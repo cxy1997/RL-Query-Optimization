@@ -56,3 +56,13 @@ cd calcite/example/csv
    wget http://homepages.cwi.nl/~boncz/job/imdb.tgz
    tar -xzf imdb.tgz
    ```
+
+### Install Python dependencies
+ ```bash
+ python -m pip install psycopg2
+ ```
+
+### Usage
+```bash
+python env.py
+```
