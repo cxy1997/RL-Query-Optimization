@@ -63,6 +63,10 @@ cd calcite/example/csv
  ```
 
 ### Usage
-```bash
-python env.py
-```
+1. Put `job` folder under `RL-Query-Optimization`
+
+2. 
+   ```bash
+   python env.py
+   ```
+3. Record results in [this google sheet](https://docs.google.com/spreadsheets/d/1YjB8PJfFlHAyexqW7ha2_DQgH375APIZymi4AAbfr0U/edit?usp=sharing)
