@@ -41,3 +41,18 @@ cd calcite/example/csv
     initdb $HOME/bin/pgsql/cluster0
     pg_ctl -D $HOME/bin/pgsql/cluster0 -l logfile start
     ```
+
+### Prepare database and queries
+1. Download IMDB data from [google drive](https://drive.google.com/file/d/1Qhk-Mf2Otc6C9e-vIm2OQyKoko7kK_--/view?usp=sharing)
+
+2. Create database
+    ```bash
+    createdb imdb
+    psql imdb -f imdb_dump.sql
+    ```
+
+3. Download JOB
+    ```bash
+   wget http://homepages.cwi.nl/~boncz/job/imdb.tgz
+   tar -xzf imdb.tgz
+   ```
