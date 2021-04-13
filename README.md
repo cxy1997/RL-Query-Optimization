@@ -36,10 +36,17 @@ cd calcite/example/csv
     export PATH=$HOME/bin/pgsql/bin:$PATH
     export MANPATH=$HOME/bin/pgsql/share/man:$MANPATH
     ```
-3. Start the server
+3. Select an unused port number, update it in [google sheets](https://docs.google.com/spreadsheets/d/1YjB8PJfFlHAyexqW7ha2_DQgH375APIZymi4AAbfr0U/edit?usp=sharinghttps://docs.google.com/spreadsheets/d/1YjB8PJfFlHAyexqW7ha2_DQgH375APIZymi4AAbfr0U/edit?usp=sharing), and add these lines to `~/.bashrc`
+    ```bash
+    export dbport=xxxx
+    alias createdb='$HOME/bin/pgsql/bin/createdb -h localhost -p $dbport'
+    alias psql='$HOME/bin/pgsql/bin/psql -h localhost -p $dbport'
     ```
+4. Start the server
+    ```
+    source ~/.bashrc
     initdb $HOME/bin/pgsql/cluster0
-    pg_ctl -D $HOME/bin/pgsql/cluster0 -l logfile start
+    pg_ctl -D $HOME/bin/pgsql/cluster0 -o "-p $dbport" -l logfile start
     ```
 
 ### Prepare database and queries
