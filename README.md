@@ -77,3 +77,35 @@ cd calcite/example/csv
    python env.py
    ```
 3. Record results in [this google sheet](https://docs.google.com/spreadsheets/d/1YjB8PJfFlHAyexqW7ha2_DQgH375APIZymi4AAbfr0U/edit?usp=sharing)
+
+### Parse SQL files
+1. Run the function of `parse_sql()` which takes the SQL filepath as the input in `parse_sql.py`
+
+2. The output of `parse_sql()` should be in three parts:
+* `dataset_map` which is a `dict` where the keys are in short name for the data used and the corresponding value is the data's full name. An example is here:
+
+  ```
+  {'cn': 'company_name', 'ct': 'company_type'}
+  ```
+
+  You can loop  `dataset_map.keys()`  to see how many datasets are used.
+
+* `query_cart_pairs` which is a `list` contains tuples for the join query for two datasets. An example is here:
+
+  ```
+  [
+  ({'mi': 'movie_id'}, {'t': 'id'}), 
+  ({'it2': 'id'}, {'mi': 'info_type_id'})
+  ]
+  ```
+
+  Inside each tuple, every element is a `dict` and the key is the short name for dataset and value is the attribute used.
+
+*  `query_filter_cmds` which is a `list` contains other SQL executing commands. An example is:
+
+   ```
+   ["cn.country_code ='[us]'", "ct.kind ='production companies'"]
+   ```
+
+    
+
