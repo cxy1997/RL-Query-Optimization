@@ -1,7 +1,7 @@
 import os
 import re
 
-_DEBUG_ = True
+_DEBUG_ = False
 
 def parse_sql(filename):
 	# Open and read the file as a single buffer
