@@ -1,0 +1,38 @@
+{
+ "name": "doubletitle_1 high",
+ "relations": [
+  {"name": "k", "basetable": "keyword", "cardinality": 1, "unfilteredCardinality": 134170},
+  {"name": "lt", "basetable": "link_type", "cardinality": 18, "unfilteredCardinality": 18},
+  {"name": "mk", "basetable": "movie_keyword", "cardinality": 4.52393e+06, "unfilteredCardinality": 4.52393e+06},
+  {"name": "ml", "basetable": "movie_link", "cardinality": 29997, "unfilteredCardinality": 29997},
+  {"name": "t1", "basetable": "title", "cardinality": 2.52831e+06, "unfilteredCardinality": 2.52831e+06},
+  {"name": "t2", "basetable": "title", "cardinality": 2.52831e+06, "unfilteredCardinality": 2.52831e+06}
+ ],
+ "joins": [
+  {"relations": ["lt", "ml"], "primaryKeySide": "lt"},
+  {"relations": ["mk", "k"], "primaryKeySide": "k"},
+  {"relations": ["ml", "t1"], "primaryKeySide": "t1"},
+  {"relations": ["ml", "t2"], "primaryKeySide": "t2"},
+  {"relations": ["t1", "mk"], "primaryKeySide": "t1"}
+ ],
+ "sizes": [
+  {"relations": ["k", "mk"], "cardinality": 1},
+  {"relations": ["lt", "ml"], "cardinality": 29997},
+  {"relations": ["mk", "t1"], "cardinality": 4.52393e+06},
+  {"relations": ["ml", "t1"], "cardinality": 29997},
+  {"relations": ["ml", "t2"], "cardinality": 29997},
+  {"relations": ["k", "mk", "t1"], "cardinality": 1},
+  {"relations": ["lt", "ml", "t1"], "cardinality": 29997},
+  {"relations": ["lt", "ml", "t2"], "cardinality": 29997},
+  {"relations": ["mk", "ml", "t1"], "cardinality": 288192},
+  {"relations": ["ml", "t1", "t2"], "cardinality": 29997},
+  {"relations": ["k", "mk", "ml", "t1"], "cardinality": 0},
+  {"relations": ["lt", "mk", "ml", "t1"], "cardinality": 288192},
+  {"relations": ["lt", "ml", "t1", "t2"], "cardinality": 29997},
+  {"relations": ["mk", "ml", "t1", "t2"], "cardinality": 288192},
+  {"relations": ["k", "lt", "mk", "ml", "t1"], "cardinality": 0},
+  {"relations": ["k", "mk", "ml", "t1", "t2"], "cardinality": 0},
+  {"relations": ["lt", "mk", "ml", "t1", "t2"], "cardinality": 288192},
+  {"relations": ["k", "lt", "mk", "ml", "t1", "t2"], "cardinality": 0}
+ ]
+}

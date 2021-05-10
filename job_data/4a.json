@@ -1,0 +1,33 @@
+{
+ "name": "cluster2a_4 avg",
+ "relations": [
+  {"name": "it", "basetable": "info_type", "cardinality": 1, "unfilteredCardinality": 113},
+  {"name": "k", "basetable": "keyword", "cardinality": 30, "unfilteredCardinality": 134170},
+  {"name": "mi_idx", "basetable": "movie_info_idx", "cardinality": 517682, "unfilteredCardinality": 1.38004e+06},
+  {"name": "mk", "basetable": "movie_keyword", "cardinality": 4.52393e+06, "unfilteredCardinality": 4.52393e+06},
+  {"name": "t", "basetable": "title", "cardinality": 1.01292e+06, "unfilteredCardinality": 2.52831e+06}
+ ],
+ "joins": [
+  {"relations": ["it", "mi_idx"], "primaryKeySide": "it"},
+  {"relations": ["k", "mk"], "primaryKeySide": "k"},
+  {"relations": ["mk", "mi_idx"]},
+  {"relations": ["t", "mi_idx"], "primaryKeySide": "t"},
+  {"relations": ["t", "mk"], "primaryKeySide": "t"}
+ ],
+ "sizes": [
+  {"relations": ["it", "mi_idx"], "cardinality": 352990},
+  {"relations": ["k", "mk"], "cardinality": 12951},
+  {"relations": ["mi_idx", "mk"], "cardinality": 3.96324e+06},
+  {"relations": ["mi_idx", "t"], "cardinality": 159460},
+  {"relations": ["mk", "t"], "cardinality": 1.25309e+06},
+  {"relations": ["it", "mi_idx", "mk"], "cardinality": 2.88166e+06},
+  {"relations": ["it", "mi_idx", "t"], "cardinality": 106021},
+  {"relations": ["k", "mi_idx", "mk"], "cardinality": 8433},
+  {"relations": ["k", "mk", "t"], "cardinality": 2235},
+  {"relations": ["mi_idx", "mk", "t"], "cardinality": 967981},
+  {"relations": ["it", "k", "mi_idx", "mk"], "cardinality": 5820},
+  {"relations": ["it", "mi_idx", "mk", "t"], "cardinality": 697651},
+  {"relations": ["k", "mi_idx", "mk", "t"], "cardinality": 1143},
+  {"relations": ["it", "k", "mi_idx", "mk", "t"], "cardinality": 740}
+ ]
+}

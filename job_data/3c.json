@@ -1,0 +1,25 @@
+{
+ "name": "cluster2a_3 low",
+ "relations": [
+  {"name": "k", "basetable": "keyword", "cardinality": 30, "unfilteredCardinality": 134170},
+  {"name": "mi", "basetable": "movie_info", "cardinality": 706674, "unfilteredCardinality": 1.48357e+07},
+  {"name": "mk", "basetable": "movie_keyword", "cardinality": 4.52393e+06, "unfilteredCardinality": 4.52393e+06},
+  {"name": "t", "basetable": "title", "cardinality": 1.74903e+06, "unfilteredCardinality": 2.52831e+06}
+ ],
+ "joins": [
+  {"relations": ["k", "mk"], "primaryKeySide": "k"},
+  {"relations": ["mk", "mi"]},
+  {"relations": ["t", "mi"], "primaryKeySide": "t"},
+  {"relations": ["t", "mk"], "primaryKeySide": "t"}
+ ],
+ "sizes": [
+  {"relations": ["k", "mk"], "cardinality": 12951},
+  {"relations": ["mi", "mk"], "cardinality": 4.06093e+06},
+  {"relations": ["mi", "t"], "cardinality": 476405},
+  {"relations": ["mk", "t"], "cardinality": 2.74267e+06},
+  {"relations": ["k", "mi", "mk"], "cardinality": 12163},
+  {"relations": ["k", "mk", "t"], "cardinality": 7874},
+  {"relations": ["mi", "mk", "t"], "cardinality": 2.26518e+06},
+  {"relations": ["k", "mi", "mk", "t"], "cardinality": 7250}
+ ]
+}

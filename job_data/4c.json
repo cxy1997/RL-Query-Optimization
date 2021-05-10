@@ -1,0 +1,33 @@
+{
+ "name": "cluster2a_4 low",
+ "relations": [
+  {"name": "it", "basetable": "info_type", "cardinality": 1, "unfilteredCardinality": 113},
+  {"name": "k", "basetable": "keyword", "cardinality": 30, "unfilteredCardinality": 134170},
+  {"name": "mi_idx", "basetable": "movie_info_idx", "cardinality": 806365, "unfilteredCardinality": 1.38004e+06},
+  {"name": "mk", "basetable": "movie_keyword", "cardinality": 4.52393e+06, "unfilteredCardinality": 4.52393e+06},
+  {"name": "t", "basetable": "title", "cardinality": 1.74903e+06, "unfilteredCardinality": 2.52831e+06}
+ ],
+ "joins": [
+  {"relations": ["it", "mi_idx"], "primaryKeySide": "it"},
+  {"relations": ["k", "mk"], "primaryKeySide": "k"},
+  {"relations": ["mk", "mi_idx"]},
+  {"relations": ["t", "mi_idx"], "primaryKeySide": "t"},
+  {"relations": ["t", "mk"], "primaryKeySide": "t"}
+ ],
+ "sizes": [
+  {"relations": ["it", "mi_idx"], "cardinality": 448969},
+  {"relations": ["k", "mk"], "cardinality": 12951},
+  {"relations": ["mi_idx", "mk"], "cardinality": 6.05338e+06},
+  {"relations": ["mi_idx", "t"], "cardinality": 536372},
+  {"relations": ["mk", "t"], "cardinality": 2.74267e+06},
+  {"relations": ["it", "mi_idx", "mk"], "cardinality": 3.43592e+06},
+  {"relations": ["it", "mi_idx", "t"], "cardinality": 294217},
+  {"relations": ["k", "mi_idx", "mk"], "cardinality": 14599},
+  {"relations": ["k", "mk", "t"], "cardinality": 7874},
+  {"relations": ["mi_idx", "mk", "t"], "cardinality": 3.56876e+06},
+  {"relations": ["it", "k", "mi_idx", "mk"], "cardinality": 8092},
+  {"relations": ["it", "mi_idx", "mk", "t"], "cardinality": 2.01269e+06},
+  {"relations": ["k", "mi_idx", "mk", "t"], "cardinality": 8600},
+  {"relations": ["it", "k", "mi_idx", "mk", "t"], "cardinality": 4700}
+ ]
+}

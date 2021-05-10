@@ -1,0 +1,33 @@
+{
+ "name": "cluster2a_5 low",
+ "relations": [
+  {"name": "ct", "basetable": "company_type", "cardinality": 1, "unfilteredCardinality": 4},
+  {"name": "it", "basetable": "info_type", "cardinality": 113, "unfilteredCardinality": 113},
+  {"name": "mc", "basetable": "movie_companies", "cardinality": 295628, "unfilteredCardinality": 2.60913e+06},
+  {"name": "mi", "basetable": "movie_info", "cardinality": 706674, "unfilteredCardinality": 1.48357e+07},
+  {"name": "t", "basetable": "title", "cardinality": 1.74903e+06, "unfilteredCardinality": 2.52831e+06}
+ ],
+ "joins": [
+  {"relations": ["ct", "mc"], "primaryKeySide": "ct"},
+  {"relations": ["it", "mi"], "primaryKeySide": "it"},
+  {"relations": ["mc", "mi"]},
+  {"relations": ["t", "mc"], "primaryKeySide": "t"},
+  {"relations": ["t", "mi"], "primaryKeySide": "t"}
+ ],
+ "sizes": [
+  {"relations": ["ct", "mc"], "cardinality": 798},
+  {"relations": ["it", "mi"], "cardinality": 706674},
+  {"relations": ["mc", "mi"], "cardinality": 294926},
+  {"relations": ["mc", "t"], "cardinality": 105501},
+  {"relations": ["mi", "t"], "cardinality": 476405},
+  {"relations": ["ct", "mc", "mi"], "cardinality": 691},
+  {"relations": ["ct", "mc", "t"], "cardinality": 767},
+  {"relations": ["it", "mc", "mi"], "cardinality": 294926},
+  {"relations": ["it", "mi", "t"], "cardinality": 476405},
+  {"relations": ["mc", "mi", "t"], "cardinality": 99367},
+  {"relations": ["ct", "it", "mc", "mi"], "cardinality": 691},
+  {"relations": ["ct", "mc", "mi", "t"], "cardinality": 669},
+  {"relations": ["it", "mc", "mi", "t"], "cardinality": 99367},
+  {"relations": ["ct", "it", "mc", "mi", "t"], "cardinality": 669}
+ ]
+}
