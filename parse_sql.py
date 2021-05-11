@@ -2,9 +2,8 @@ import os
 import re
 import sqlparse
 
-_DEBUG_ = True
 
-def parse_sql(filename):
+def parse_sql(filename, _DEBUG_=False):
 	# Open and read the file as a single buffer
 	with open(filename, 'r') as f:
 		predicates = [x.strip("\n,; ") for x in f.readlines()]
@@ -63,12 +62,12 @@ def parse_sql(filename):
 	# 	print(query_cart_pairs)
 	# 	print(query_filter_cmds)
 
-	return tables, predicates
+	return {"tables": tables, "predicates": predicates}
 
 if __name__ == '__main__':
 	job_dir = 'job_formatted'
 	job_names = os.listdir(job_dir)[:10]
 	for job in job_names:
-		tables, predicates = parse_sql(os.path.join(job_dir, job))
+		tables, predicates = parse_sql(os.path.join(job_dir, job), _DEBUG_=True)
 		# print(tables)
 		# print(predicates)
