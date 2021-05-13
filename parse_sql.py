@@ -3,7 +3,7 @@ import re
 import sqlparse
 
 
-def parse_sql(filename, _DEBUG_=False):
+def parse_sql(filename):
 	# Open and read the file as a single buffer
 	with open(filename, 'r') as f:
 		predicates = [x.strip("\n,; ") for x in f.readlines()]
@@ -12,62 +12,33 @@ def parse_sql(filename, _DEBUG_=False):
 	from_info = []
 	while not predicates[0].startswith('WHERE'):
 		from_info.append(predicates.pop(0))
-	predicates[0] = predicates[0][6:]
+	predicates[0] = predicates[0].lstrip("WHERE ")
 
-	tables = [data.split('AS')[1].strip() for data in from_info]
-	if _DEBUG_:
-		print('------------------')
-		for x in from_info:
-			print(x)
-		print('------------------')
-		print("tables:", tables)
+	tables = {data.lstrip("FROM ").split('AS')[1].strip(): data.lstrip("FROM ").split('AS')[0].strip() for data in from_info}
 
-	predicates = list(filter(lambda x: x.count(".") >= 2, predicates))
-	predicates = list(map(lambda x: x.lstrip("AND "), predicates))
+	predicates = list(filter(lambda x: x.count(".") >= 2 and "=" in x, predicates))
+	predicates = list(map(lambda x: x.lstrip("AND ").split(" = "), predicates))
 
-	if _DEBUG_:
-		print('------------------')
-		for x in predicates:
-			print(x)
+	return tables, predicates
 
-	# predicates = re.split('OR', condition_info, flags=re.IGNORECASE)
-	# predicates = list(map(lambda x: re.split('AND', x, flags=re.IGNORECASE), predicates))
 
-	# Parse the dataset conditions:
-	# query_cart_pairs = []
-	# query_filter_cmds  = []
-	# conditions = re.split('AND', condition_info, flags=re.IGNORECASE)
-	# for cond in conditions:
-	# 	cond = cond.strip()
-	# 	if '=' in cond:
-	# 		conds = cond.split('=')
-	# 		if _DEBUG_:
-	# 			print("predicate", cond, cond.count('.') == 2)
-	# 		if len(conds) == 2:
-	# 			left_cond, right_cond = cond.split('=')
-	# 			left_cond, right_cond = left_cond.strip(), right_cond.strip()
-	# 			if (left_cond.split('.')[0] in tables) and (right_cond.split('.')[0] in tables):
-	# 				query_cart_pairs.append(({left_cond.split('.')[0]: left_cond.split('.')[1]},
-	# 					{right_cond.split('.')[0]: right_cond.split('.')[1]}))
-	# 			else:
-	# 				query_filter_cmds.append(cond)
-	# 		else:
-	# 				query_filter_cmds.append(cond)
-	# 	else:
-	# 		query_filter_cmds.append(cond)
-	#
-	#
-	# # This is for debug output
-	# if _DEBUG_:
-	# 	print(query_cart_pairs)
-	# 	print(query_filter_cmds)
+def real_colomn(sname, tables):
+	t, c = sname.split('.')
+	return f"{tables[t]}.{c}"
 
-	return {"tables": tables, "predicates": predicates}
 
 if __name__ == '__main__':
 	job_dir = 'job_formatted'
-	job_names = os.listdir(job_dir)[:10]
+	job_names = os.listdir(job_dir)
+	all_tables, all_colomns = [], []
 	for job in job_names:
-		tables, predicates = parse_sql(os.path.join(job_dir, job), _DEBUG_=True)
-		# print(tables)
-		# print(predicates)
+		tables, predicates = parse_sql(os.path.join(job_dir, job))
+		all_tables += list(tables.values())
+		for predicate in predicates:
+			for sname in predicate:
+				all_colomns.append(real_colomn(sname, tables))
+	all_tables, all_colomns = list(set(all_tables)), list(set(all_colomns))
+	with open("table_names.txt", "w") as f:
+		f.write("\n".join(all_tables))
+	with open("colomn_names.txt", "w") as f:
+		f.write("\n".join(all_colomns))
