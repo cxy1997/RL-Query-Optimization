@@ -40,5 +40,5 @@ if __name__ == '__main__':
 	all_tables, all_colomns = list(set(all_tables)), list(set(all_colomns))
 	with open("table_names.txt", "w") as f:
 		f.write("\n".join(all_tables))
-	with open("colomn_names.txt", "w") as f:
+	with open("column_names.txt", "w") as f:
 		f.write("\n".join(all_colomns))
