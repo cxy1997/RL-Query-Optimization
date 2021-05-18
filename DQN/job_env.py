@@ -34,8 +34,15 @@ class JOB_env(object):
         self.table_mapping, self.predicates = self.queries[self.index]
         self.tables = list(self.table_mapping.keys())
 
-        self.state = {"tables": {table: cardinality},
-                      "possible_actions": {action: predicates}}
+        # [([1, 0, 0], 20), ([0, 1, 0], 30), ([0, 0, 1], 10)]
+        # {(0, 1): (21, 25), (1, 2): (12, 21)}
+
+        # take action (0, 1)
+        # [([1, 1, 0], 5), ([0, 0, 1], 10)]
+        # {(0, 1): (12, 21)}
+
+        self.state = {"tables": [(id, cardinality), ...]},
+                      "possible_actions": {action: predicate}}
         return self.state, self.get_info()
 
     def step(self, action):
