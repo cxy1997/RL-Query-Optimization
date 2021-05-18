@@ -68,6 +68,8 @@ class JOB_env(object):
         for (key_1, key_2) in zip(self.table_mapping.keys(), self.cardinalities["relations"]):
             assert key_1 == key_2["name"]
 
+        return self.state, self.get_info()
+
     def step(self, action):
         return self.state, reward, done, self.get_info()
 
