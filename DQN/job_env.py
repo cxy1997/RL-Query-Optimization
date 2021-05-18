@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import sys
-sys.path.insert(0, "..")
+sys.path.append('../')
 from parse_sql import parse_sql
 from parse_cardinality import parse_cardinality
 
@@ -33,7 +33,26 @@ class JOB_env(object):
 
         self.table_mapping, self.predicates = self.queries[self.index]
         self.tables = list(self.table_mapping.keys())
+        self.cardinalities = self.cardinalities[self.index]
 
+        self.state = {}
+        self.state["tables"] = [(self.get_onehot_encoding(item["basetable"], self.all_tables),
+                                item["cardinality"]) for item in self.cardinalities["relations"]]
+        # print('--------------------------------------')
+        # print(self.state["tables"])
+        self.state["possible_actions"]= {}
+        predicates_name_list = [key for key in self.table_mapping.keys()]
+        for predicate in self.predicates:
+            entry_0, entry_1 = predicate
+            idx_0, idx_1 = predicates_name_list.index(entry_0.split('.')[0]), predicates_name_list.index(entry_1.split('.')[0])
+            value_0 = self.get_onehot_encoding(self.table_mapping[entry_0.split('.')[0]] + '.' + entry_0.split('.')[1], self.all_columns)
+            value_1 = self.get_onehot_encoding(self.table_mapping[entry_1.split('.')[0]] + '.' + entry_1.split('.')[1], self.all_columns)
+            self.state["possible_actions"][(idx_0, idx_1)] = (value_0, value_1)
+
+        # print('--------------------------------------')
+        # print(self.state["possible_actions"])
+
+        # This is an example.
         # [([1, 0, 0], 20), ([0, 1, 0], 30), ([0, 0, 1], 10)]
         # {(0, 1): (21, 25), (1, 2): (12, 21)}
 
@@ -41,9 +60,13 @@ class JOB_env(object):
         # [([1, 1, 0], 5), ([0, 0, 1], 10)]
         # {(0, 1): (12, 21)}
 
-        self.state = {"tables": [(id, cardinality), ...]},
-                      "possible_actions": {action: predicate}}
-        return self.state, self.get_info()
+        # self.state = {"tables": [(id, cardinality), ...]},
+        #               "possible_actions": {action: predicate}}
+        # return self.state, self.get_info()
+
+        # Finally double check if the order of name in self.table_mapping and self.cardinalities["relations"] is same
+        for (key_1, key_2) in zip(self.table_mapping.keys(), self.cardinalities["relations"]):
+            assert key_1 == key_2["name"]
 
     def step(self, action):
         return self.state, reward, done, self.get_info()
@@ -51,9 +74,17 @@ class JOB_env(object):
     def get_info(self):
         return None
 
+    def get_onehot_encoding(self, query, keys_list):
+        return [int(query == key) for key in keys_list]
+
 
 if __name__ == "__main__":
     env = JOB_env()
-    print(env.job_list[0])
-    print(env.queries[0])
-    print(env.cardinalities[0])
+    # print('--------------------------------------')
+    # print(env.job_list[0])
+    # print('--------------------------------------')
+    # print(env.queries[0])
+    # print('--------------------------------------')
+    # print(env.cardinalities[0])
+    # print('--------------------------------------')
+    env.reset()
