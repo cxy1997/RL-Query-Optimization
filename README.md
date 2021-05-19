@@ -58,11 +58,6 @@ cd calcite/example/csv
     psql imdb -f imdb_dump.sql
     ```
 
-3. Download JOB
-    ```bash
-   wget http://homepages.cwi.nl/~boncz/job/imdb.tgz
-   tar -xzf imdb.tgz
-   ```
 
 ### Install Python dependencies
  ```bash

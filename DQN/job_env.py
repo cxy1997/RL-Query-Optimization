@@ -12,47 +12,58 @@ class JOB_env(object):
                  query_dir="../job_formatted",
                  cardinality_dir="../job_data",
                  table_names_file="../table_names.txt",
-                 column_names_file="../column_names.txt"):
+                 column_names_file="../column_names.txt",
+                 debug_index=None):
         with open(job_list_file) as f:
             self.job_list = [x.strip().rstrip(".sql") for x in f.readlines()]
         self.queries = [parse_sql(os.path.join(query_dir, f'{fname}.sql')) for fname in self.job_list]
-        self.cardinalities = [parse_cardinality(os.path.join(cardinality_dir, f'{fname}.json')) for fname in self.job_list]
+        self.all_cardinalities = [parse_cardinality(os.path.join(cardinality_dir, f'{fname}.json')) for fname in self.job_list]
         with open(table_names_file) as f:
             self.all_tables = [x.strip() for x in f.readlines()]
         with open(column_names_file) as f:
             self.all_columns = [x.strip() for x in f.readlines()]
         self.logger = None
 
+        self.debug_index = debug_index
+
     def set_logger(self, logger):
         self.logger = logger
 
     def reset(self):
-        self.index = np.random.randint(len(self.job_list))
+        if self.debug_index is not None:
+            self.index = self.debug_index            
+        else:
+            self.index = np.random.randint(len(self.job_list))
+
         if self.logger is not None:
             self.logger.log(f"Restart from {self.job_list[self.index]}.")
+        else:
+            print(f"Restart from {self.job_list[self.index]}.")
 
         self.table_mapping, self.predicates = self.queries[self.index]
-        self.tables = list(self.table_mapping.keys())
-        self.cardinalities = self.cardinalities[self.index]
+        self.tables = list(self.table_mapping.keys())  # [an,cc,cct1]
+        self.cardinalities = self.all_cardinalities[self.index]
 
         self.state = {}
         self.state["tables"] = [(self.get_onehot_encoding(item["basetable"], self.all_tables),
                                 item["cardinality"]) for item in self.cardinalities["relations"]]
-        # print('--------------------------------------')
-        # print(self.state["tables"])
+        
         self.state["possible_actions"]= {}
-        predicates_name_list = [key for key in self.table_mapping.keys()]
         for predicate in self.predicates:
             entry_0, entry_1 = predicate
-            idx_0, idx_1 = predicates_name_list.index(entry_0.split('.')[0]), predicates_name_list.index(entry_1.split('.')[0])
+            idx_0, idx_1 = self.tables.index(entry_0.split('.')[0]), self.tables.index(entry_1.split('.')[0])
             value_0 = self.get_onehot_encoding(self.table_mapping[entry_0.split('.')[0]] + '.' + entry_0.split('.')[1], self.all_columns)
             value_1 = self.get_onehot_encoding(self.table_mapping[entry_1.split('.')[0]] + '.' + entry_1.split('.')[1], self.all_columns)
-            self.state["possible_actions"][(idx_0, idx_1)] = (value_0, value_1)
-
-        # print('--------------------------------------')
-        # print(self.state["possible_actions"])
+            
+            # make sure idx_0 < idx_1
+            if idx_0 < idx_1:
+                self.state["possible_actions"][(idx_0, idx_1)] = (value_0, value_1)
+            else:
+                self.state["possible_actions"][(idx_1, idx_0)] = (value_0, value_1)
 
         # This is an example.
+        # noted that encoding is np.array instead of list
+
         # [([1, 0, 0], 20), ([0, 1, 0], 30), ([0, 0, 1], 10)]
         # {(0, 1): (21, 25), (1, 2): (12, 21)}
 
@@ -62,31 +73,84 @@ class JOB_env(object):
 
         # self.state = {"tables": [(id, cardinality), ...]},
         #               "possible_actions": {action: predicate}}
-        # return self.state, self.get_info()
 
         # Finally double check if the order of name in self.table_mapping and self.cardinalities["relations"] is same
         for (key_1, key_2) in zip(self.table_mapping.keys(), self.cardinalities["relations"]):
             assert key_1 == key_2["name"]
 
+        # double check number of possible_actions matches number of env.cardinalities['joins']
+        assert len(list(self.state['possible_actions'].keys())) == len(self.cardinalities['joins'])
+
+        # map encoding to cardinalities, from env.cardinalities['sizes']
+        self.e2c = {}
+
+        for temp in self.cardinalities['sizes']:
+            e = np.zeros(len(self.all_tables),dtype=int)
+            for temp_table in temp['relations']:
+                e += self.get_onehot_encoding(self.table_mapping[temp_table], self.all_tables)
+            c = temp['cardinality']
+            self.e2c[e.tobytes()] = c
+
         return self.state, self.get_info()
 
     def step(self, action):
+
+        # here action is the tuple of the actual merged two table indexes
+        (idx_0,idx_1) = action
+        assert idx_0 < idx_1
+        
+        table_1 = self.state['tables'].pop(idx_1)
+        table_0 = self.state['tables'].pop(idx_0)
+        join_e = table_0[0]+table_1[0]
+        join_c = self.e2c[join_e.tobytes()]
+        table_join = (join_e,join_c)
+        self.state['tables'].append(table_join)
+
+        done = (len(self.state['tables'])==1)
+        # currently set the reward function as -log(c)
+        reward = -np.log(join_c)
+
+        if done:
+            self.state['possible_actions'] = None
+        
+        else:
+
+            new_action_dict = {}
+
+            for temp_tuple in self.state['possible_actions']:
+                if temp_tuple == (idx_0,idx_1):
+                    continue
+                new_action = [None,None]
+                for i in range(2):
+                    idx = temp_tuple[i]
+                    if idx < idx_0:
+                        new_action[i] = idx
+                    elif idx == idx_0:
+                        new_action[i] = len(self.state['tables'])-1
+                    elif idx > idx_0:
+                        if idx < idx_1:
+                            new_action[i] = idx-1
+                        elif idx == idx_1:
+                            new_action[i] = len(self.state['tables'])-1
+                        elif idx > idx_1:
+                            new_action[i] = idx-2
+                if new_action[0]<new_action[1]:
+                    new_tuple = tuple(new_action)
+                else:
+                    new_tuple = (new_action[1],new_action[0])
+                new_action_dict[new_tuple] = self.state['possible_actions'][temp_tuple]
+            
+            self.state['possible_actions'] = new_action_dict
+        
         return self.state, reward, done, self.get_info()
 
     def get_info(self):
         return None
 
     def get_onehot_encoding(self, query, keys_list):
-        return [int(query == key) for key in keys_list]
+        return np.array([int(query == key) for key in keys_list])
 
 
 if __name__ == "__main__":
     env = JOB_env()
-    # print('--------------------------------------')
-    # print(env.job_list[0])
-    # print('--------------------------------------')
-    # print(env.queries[0])
-    # print('--------------------------------------')
-    # print(env.cardinalities[0])
-    # print('--------------------------------------')
     env.reset()
