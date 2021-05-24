@@ -4,6 +4,7 @@ import sys
 sys.path.append('../')
 from parse_sql import parse_sql
 from parse_cardinality import parse_cardinality
+from copy import deepcopy
 
 
 class JOB_env(object):
@@ -12,8 +13,7 @@ class JOB_env(object):
                  query_dir="../job_formatted",
                  cardinality_dir="../job_data",
                  table_names_file="../table_names.txt",
-                 column_names_file="../column_names.txt",
-                 debug_index=None):
+                 column_names_file="../column_names.txt"):
         with open(job_list_file) as f:
             self.job_list = [x.strip().rstrip(".sql") for x in f.readlines()]
         self.queries = [parse_sql(os.path.join(query_dir, f'{fname}.sql')) for fname in self.job_list]
@@ -24,14 +24,15 @@ class JOB_env(object):
             self.all_columns = [x.strip() for x in f.readlines()]
         self.logger = None
 
-        self.debug_index = debug_index
+    def __len__(self):
+        return len(self.job_list)
 
     def set_logger(self, logger):
         self.logger = logger
 
-    def reset(self):
-        if self.debug_index is not None:
-            self.index = self.debug_index            
+    def reset(self, index=None):
+        if index is not None:
+            self.index = index
         else:
             self.index = np.random.randint(len(self.job_list))
 
@@ -75,8 +76,8 @@ class JOB_env(object):
         #               "possible_actions": {action: predicate}}
 
         # Finally double check if the order of name in self.table_mapping and self.cardinalities["relations"] is same
-        for (key_1, key_2) in zip(self.table_mapping.keys(), self.cardinalities["relations"]):
-            assert key_1 == key_2["name"]
+        # for (key_1, key_2) in zip(self.table_mapping.keys(), self.cardinalities["relations"]):
+        #     assert key_1 == key_2["name"]
 
         # double check number of possible_actions matches number of env.cardinalities['joins']
         assert len(list(self.state['possible_actions'].keys())) == len(self.cardinalities['joins'])
@@ -91,7 +92,7 @@ class JOB_env(object):
             c = temp['cardinality']
             self.e2c[e.tobytes()] = c
 
-        return self.state, self.get_info()
+        return deepcopy(self.state), self.get_info()
 
     def step(self, action):
 
@@ -108,7 +109,7 @@ class JOB_env(object):
 
         done = (len(self.state['tables'])==1)
         # currently set the reward function as -log(c)
-        reward = -np.log(join_c)
+        reward = -np.log(join_c + 1)
 
         if done:
             self.state['possible_actions'] = None
@@ -142,7 +143,7 @@ class JOB_env(object):
             
             self.state['possible_actions'] = new_action_dict
         
-        return self.state, reward, done, self.get_info()
+        return deepcopy(self.state), reward, done, self.get_info()
 
     def get_info(self):
         return None

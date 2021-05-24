@@ -1,5 +1,5 @@
 SELECT min(cn.name) AS producing_company,
-       min(miidx.info) AS rating,
+       min(mi_idx.info) AS rating,
        min(t.title) AS movie
 FROM company_name AS cn,
      company_type AS ct,
@@ -8,7 +8,7 @@ FROM company_name AS cn,
      kind_type AS kt,
      movie_companies AS mc,
      movie_info AS mi,
-     movie_info_idx AS miidx,
+     movie_info_idx AS mi_idx,
      title AS t
 WHERE cn.country_code ='[us]'
     AND ct.kind ='production companies'
@@ -21,8 +21,8 @@ WHERE cn.country_code ='[us]'
     AND mc.movie_id = t.id
     AND cn.id = mc.company_id
     AND ct.id = mc.company_type_id
-    AND miidx.movie_id = t.id
-    AND it.id = miidx.info_type_id
-    AND mi.movie_id = miidx.movie_id
+    AND mi_idx.movie_id = t.id
+    AND it.id = mi_idx.info_type_id
+    AND mi.movie_id = mi_idx.movie_id
     AND mi.movie_id = mc.movie_id
-    AND miidx.movie_id = mc.movie_id;
+    AND mi_idx.movie_id = mc.movie_id;
