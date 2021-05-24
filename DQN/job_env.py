@@ -110,9 +110,9 @@ class JOB_env(object):
         done = (len(self.state['tables'])==1)
         # currently set the reward function as -log(c)
         reward = {
-            "log_c": -np.log(join_c + 1) / 10,
-            "log_reduced_c": np.log(max(table_0[1] - join_c, table_1[1] - join_c,  1)) / 10,
-            "log_scale": np.log((table_0[1]+1) * (table_1[1]+1) / (join_c+1)) / 10
+            "log_c": np.clip(-np.log(join_c + 1) / 10, -10, 10),
+            "log_reduced_c": np.clip(np.log(max(table_0[1] - join_c, table_1[1] - join_c,  1)) / 10, -10, 10),
+            "log_scale": np.clip(np.log((table_0[1]+1) * (table_1[1]+1) / (join_c+1)) / 10, -10, 10)
         }
 
         if done:

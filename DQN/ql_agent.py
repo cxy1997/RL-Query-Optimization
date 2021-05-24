@@ -10,14 +10,14 @@ import random
 from model import Net
 from torch.autograd import Variable
 from replay_memory import ReplayMemory
-from torch.optim.lr_scheduler import StepLR
+from collections import defaultdict
 
 
-class DQNAgent:
+class QLAgent:
     def __init__(self, args, exploration=None, save_path=None):
         self.dqn_net = Net(hidden_size=args.hidden_size).cuda().float().train()
         self.target_q_net = Net(hidden_size=args.hidden_size).cuda().float().train().cuda().float().eval()
-        self.optimizer = optim.SGD(self.dqn_net.parameters(), lr=args.lr, weight_decay=5e-4)
+        self.optimizer = optim.Adam(self.dqn_net.parameters(), lr=args.lr, amsgrad=True, weight_decay=5e-4)
         self.replay_buffer = ReplayMemory(args.buffer_size)
         self.ret = 0
         self.exploration = exploration
@@ -25,7 +25,6 @@ class DQNAgent:
         self.target_update_freq = args.target_update_freq
         self.criterion = torch.nn.MSELoss(reduction="mean")
         self.args = args
-        self.scheduler = StepLR(self.optimizer, step_size=100, gamma=0.2)
 
         self.model_path = os.path.join(save_path, 'dqn', 'model')
         self.optim_path = os.path.join(save_path, 'dqn', 'optimizer')
@@ -115,4 +114,3 @@ class DQNAgent:
             self.target_q_net.load_state_dict(self.dqn_net.state_dict())
             torch.save(self.target_q_net.state_dict(), os.path.join(self.model_path, f'model_{save_num}.pt'))
             torch.save(self.optimizer.state_dict(), os.path.join(self.optim_path, f'optimizer_{save_num}.pt'))
-        self.scheduler.step()

@@ -15,19 +15,20 @@ reward_modes = ["log_c", "log_reduced_c", "log_scale"]
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--save-path', type=str, default='run3')
+parser.add_argument('--save-path', type=str, default='run7')
 parser.add_argument('--load-model', type=str, default='off', choices=["on", "off"])
 parser.add_argument('--eval', action='store_true')
 parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--buffer-size', type=int, default=100000)
-parser.add_argument('--learning-starts', type=int, default=5000)
-parser.add_argument('--learning-freq', type=int, default=25)
+parser.add_argument('--buffer-size', type=int, default=50000)
+parser.add_argument('--learning-starts', type=int, default=3000)
+parser.add_argument('--learning-freq', type=int, default=20)
 parser.add_argument('--eval-every', type=int, default=5000)
-parser.add_argument('--target-update-freq', type=int, default=10)
-parser.add_argument('--lr', type=float, default=0.0001)
+parser.add_argument('--target-update-freq', type=int, default=25)
+parser.add_argument('--lr', type=float, default=0.01)
+parser.add_argument('--gamma', type=float, default=0.9)
 parser.add_argument('--epsilon-frames', type=int, default=50000)
-parser.add_argument('--hidden-size', type=int, default=128)
-parser.add_argument('--batch-size', type=int, default=1024)
+parser.add_argument('--hidden-size', type=int, default=32)
+parser.add_argument('--batch-size', type=int, default=32)
 parser.add_argument('--reward-mode', type=str, default='log_c', choices=reward_modes)
 
 
@@ -63,7 +64,7 @@ def train(env, dqn_agent, args, num):
 
 def test(env, dqn_agent, args, step=-1):
     print("start testing ...")
-    epi_rewards = {x: 0 for x in reward_modes}
+    epi_rewards = {x: [] for x in reward_modes}
     for qid in trange(len(env)):
         env.reset(qid)
         last_obs, _ = env.reset()
@@ -77,9 +78,9 @@ def test(env, dqn_agent, args, step=-1):
             if not args.eval:
                 dqn_agent.push(last_obs, action, obs, reward, done)
             last_obs = obs
-        for k in epi_rewards.keys():
-            epi_rewards[k] += rewards[k]
         print(f'query {qid}, episode reward {rewards}')
+        for k in epi_rewards.keys():
+            epi_rewards[k].append(rewards[k])
 
     with open(os.path.join(args.save_path, "test_reward.txt"), 'a') as f:
         f.write(f'Step {step} Reward {str(epi_rewards)}\n')
