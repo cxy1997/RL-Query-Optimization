@@ -49,7 +49,7 @@ class JOB_env(object):
         self.state["tables"] = [(self.get_onehot_encoding(item["basetable"], self.all_tables),
                                 item["cardinality"]) for item in self.cardinalities["relations"]]
         
-        self.state["possible_actions"]= {}
+        self.state["possible_actions"] = {}
         for predicate in self.predicates:
             entry_0, entry_1 = predicate
             idx_0, idx_1 = self.tables.index(entry_0.split('.')[0]), self.tables.index(entry_1.split('.')[0])
@@ -93,6 +93,13 @@ class JOB_env(object):
             self.e2c[e.tobytes()] = c
 
         return deepcopy(self.state), self.get_info()
+
+    def get_greedy_action(self):
+        actions = {}
+        for action in self.state["possible_actions"].keys():
+            actions[action] = self.e2c[(self.state['tables'][action[0]][0] + self.state['tables'][action[1]][0]).tobytes()]
+        print(sorted(actions.values()))
+        return sorted(actions.keys(), key=actions.get)[0]
 
     def step(self, action):
 

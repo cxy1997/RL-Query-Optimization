@@ -11,18 +11,18 @@ from tqdm import tqdm, trange
 from copy import deepcopy
 
 
-reward_modes = ["log_c", "log_reduced_c", "log_scale"]
+reward_modes = ["direct_c", "log_c", "log_reduced_c", "log_scale"]
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--save-path', type=str, default='run7')
+parser.add_argument('--save-path', type=str, default='run_log_c2')
 parser.add_argument('--load-model', type=str, default='off', choices=["on", "off"])
 parser.add_argument('--eval', action='store_true')
 parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--buffer-size', type=int, default=50000)
 parser.add_argument('--learning-starts', type=int, default=3000)
 parser.add_argument('--learning-freq', type=int, default=20)
-parser.add_argument('--eval-every', type=int, default=5000)
+parser.add_argument('--eval-every', type=int, default=3000)
 parser.add_argument('--target-update-freq', type=int, default=25)
 parser.add_argument('--lr', type=float, default=0.01)
 parser.add_argument('--gamma', type=float, default=0.9)
@@ -30,6 +30,7 @@ parser.add_argument('--epsilon-frames', type=int, default=50000)
 parser.add_argument('--hidden-size', type=int, default=32)
 parser.add_argument('--batch-size', type=int, default=32)
 parser.add_argument('--reward-mode', type=str, default='log_c', choices=reward_modes)
+parser.add_argument('--agent', type=str, default='dqn', choices=["dqn", "greedy"])
 
 
 def train(env, dqn_agent, args, num):
@@ -66,12 +67,14 @@ def test(env, dqn_agent, args, step=-1):
     print("start testing ...")
     epi_rewards = {x: [] for x in reward_modes}
     for qid in trange(len(env)):
-        env.reset(qid)
-        last_obs, _ = env.reset()
+        last_obs, _ = env.reset(qid)
         rewards = {x: 0 for x in reward_modes}
         done = False
         while not done:
-            action = dqn_agent.sample_action(last_obs, args.epsilon_frames+1)
+            if args.agent == "greedy":
+                action = env.get_greedy_action()
+            else:
+                action = dqn_agent.sample_action(last_obs, args.epsilon_frames+1)
             obs, reward, done, info = env.step(action)
             for k in rewards.keys():
                 rewards[k] += reward[k]
@@ -98,14 +101,17 @@ if __name__ == '__main__':
 
     env = JOB_env()
     exploration = PiecewiseSchedule([(0, 1.0), (args.epsilon_frames, 0.0)], outside_value=0.0)
-    dqn_agent = DQNAgent(args, exploration, args.save_path)
+    if args.agent == "dqn":
+        agent = DQNAgent(args, exploration, args.save_path)
+    else:
+        agent = None
 
-    if args.load_model == "on" or args.eval:
-        num = dqn_agent.load_model()
+    if (args.load_model == "on" or args.eval) and agent is not None:
+        num = agent.load_model()
     else:
         num = 0
 
     if not args.eval:
-        train(env, dqn_agent, args, num)
+        train(env, agent, args, num)
     else:
-        test(env, dqn_agent, args)
+        test(env, agent, args)

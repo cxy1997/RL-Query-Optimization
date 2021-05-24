@@ -25,7 +25,7 @@ class DQNAgent:
         self.target_update_freq = args.target_update_freq
         self.criterion = torch.nn.MSELoss(reduction="mean")
         self.args = args
-        self.scheduler = StepLR(self.optimizer, step_size=100, gamma=0.2)
+        self.scheduler = StepLR(self.optimizer, step_size=500, gamma=0.2)
 
         self.model_path = os.path.join(save_path, 'dqn', 'model')
         self.optim_path = os.path.join(save_path, 'dqn', 'optimizer')
@@ -61,7 +61,7 @@ class DQNAgent:
         if random.random() > self.exploration.value(t):
             with torch.no_grad():
                 actions = self.dqn_net(obs)
-            action = sorted(actions.keys(), key=actions.get)[0]
+            action = sorted(actions.keys(), key=actions.get)[-1]
         else:
             action = random.sample(obs["possible_actions"].keys(), 1)[0]
         return action
