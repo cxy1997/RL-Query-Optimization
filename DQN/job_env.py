@@ -97,19 +97,23 @@ class JOB_env(object):
     def step(self, action):
 
         # here action is the tuple of the actual merged two table indexes
-        (idx_0,idx_1) = action
+        (idx_0, idx_1) = action
         assert idx_0 < idx_1
         
         table_1 = self.state['tables'].pop(idx_1)
         table_0 = self.state['tables'].pop(idx_0)
-        join_e = table_0[0]+table_1[0]
+        join_e = table_0[0] + table_1[0]
         join_c = self.e2c[join_e.tobytes()]
-        table_join = (join_e,join_c)
+        table_join = (join_e, join_c)
         self.state['tables'].append(table_join)
 
         done = (len(self.state['tables'])==1)
         # currently set the reward function as -log(c)
-        reward = -np.log(join_c + 1)
+        reward = {
+            "log_c": -np.log(join_c + 1) / 10,
+            "log_reduced_c": np.log(max(table_0[1] - join_c, table_1[1] - join_c,  1)) / 10,
+            "log_scale": np.log((table_0[1]+1) * (table_1[1]+1) / (join_c+1)) / 10
+        }
 
         if done:
             self.state['possible_actions'] = None

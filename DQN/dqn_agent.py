@@ -16,12 +16,14 @@ class DQNAgent:
     def __init__(self, args, exploration=None, save_path=None):
         self.dqn_net = Net(hidden_size=args.hidden_size).cuda().float().train()
         self.target_q_net = Net(hidden_size=args.hidden_size).cuda().float().train().cuda().float().eval()
-        self.optimizer = optim.Adam(self.dqn_net.parameters(), lr=args.lr, amsgrad=True)
+        self.optimizer = optim.Adam(self.dqn_net.parameters(), lr=args.lr, amsgrad=True, weight_decay=5e-4)
         self.replay_buffer = ReplayMemory(args.buffer_size)
         self.ret = 0
         self.exploration = exploration
         self.num_param_updates = 0
         self.target_update_freq = args.target_update_freq
+        self.criterion = torch.nn.MSELoss(reduction="mean")
+        self.args = args
 
         self.model_path = os.path.join(save_path, 'dqn', 'model')
         self.optim_path = os.path.join(save_path, 'dqn', 'optimizer')
@@ -69,6 +71,7 @@ class DQNAgent:
         return len(self.replay_buffer) >= batch_size
 
     def train_model(self, batch_size, save_num=None):
+        print("start training ...")
         q_a_values = []
         q_a_values_tp1 = []
         rewards = []
@@ -77,9 +80,12 @@ class DQNAgent:
             transition = self.replay_buffer.sample(1)[0]
             out = self.dqn_net(transition.state)
             q_a_values.append(out[transition.action])
-            with torch.no_grad():
-                q_a_values_tp1.append(max(self.dqn_net(transition.next_state).values()).detach())
-            rewards.append(transition.reward)
+            if transition.next_state["possible_actions"] is None:
+                q_a_values_tp1.append(torch.tensor([0]).view(1, 1).to(q_a_values[-1].device).float())
+            else:
+                with torch.no_grad():
+                    q_a_values_tp1.append(max(self.dqn_net(transition.next_state).values()).detach())
+            rewards.append(transition.reward[self.args.reward_mode])
             dones.append(int(transition.done))
 
         q_a_values = torch.stack(q_a_values).view(-1)
@@ -90,7 +96,12 @@ class DQNAgent:
         # print(q_a_values.shape, q_a_values_tp1.shape, rewards.shape, dones.shape)
 
         target_values = rewards + (0.99 * (1 - dones) * q_a_values_tp1)
-        dqn_loss = ((target_values.view(q_a_values.size()) - q_a_values) ** 2).mean()
+
+        dqn_loss = self.criterion(q_a_values, target_values)
+        # dqn_loss = ((target_values.view(q_a_values.size()) - q_a_values) ** 2)
+        # dqn_loss = dqn_loss[~torch.isnan(dqn_loss)].mean()
+        if torch.isnan(dqn_loss):
+            pdb.set_trace()
         print(f"step {save_num}, loss {dqn_loss}")
 
         self.optimizer.zero_grad()

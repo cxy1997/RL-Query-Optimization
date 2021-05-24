@@ -12,41 +12,44 @@ def weights_init(m):
         fan_out = np.prod(weight_shape[2: 4]) * weight_shape[0]
         w_bound = np.sqrt(6. / (fan_in + fan_out))
         m.weight.data.uniform_(-w_bound, w_bound)
-        m.bias.data.fill_(0)
+        if m.bias is not None:
+            m.bias.data.fill_(0)
     elif classname.find('Linear') != -1:
         weight_shape = list(m.weight.data.size())
         fan_in = weight_shape[1]
         fan_out = weight_shape[0]
         w_bound = np.sqrt(6. / (fan_in + fan_out))
         m.weight.data.uniform_(-w_bound, w_bound)
-        m.bias.data.fill_(0)
+        if m.bias is not None:
+            m.bias.data.fill_(0)
     elif classname.find('BatchNorm') != -1:
         m.weight.data.fill_(1)
-        m.bias.data.fill_(0)
+        if m.bias is not None:
+            m.bias.data.fill_(0)
 
 
 class TableFeatureExtractor(nn.Module):
     def __init__(self, n_tables=21, hidden_size=64):
         super(TableFeatureExtractor, self).__init__()
         self.fc1 = nn.Linear(n_tables, hidden_size-1)
-        self.ln1 = nn.LayerNorm([hidden_size-1])
-        self.relu1 = nn.LeakyReLU(inplace=True)
+        # self.ln1 = nn.LayerNorm([hidden_size-1])
+        self.relu1 = nn.ReLU(inplace=True)
         self.fc2 = nn.Linear(hidden_size, hidden_size-1)
-        self.ln2 = nn.LayerNorm([hidden_size-1])
-        self.relu2 = nn.LeakyReLU(inplace=True)
-        self.fc3 = nn.Linear(hidden_size, hidden_size)
-        self.apply(weights_init)
+        # self.ln2 = nn.LayerNorm([hidden_size-1])
+        self.relu2 = nn.ReLU(inplace=True)
+        self.fc3 = nn.Linear(hidden_size, hidden_size, bias=False)
+        # self.apply(weights_init)
 
     def forward(self, one_hot_table, cardinality):
-        c = torch.tensor(np.log(cardinality)).view(1, 1).to(one_hot_table.device).float()
+        c = torch.tensor(np.log(cardinality+1)-9).view(1, 1).to(one_hot_table.device).float()
 
         x = self.fc1(one_hot_table.float())
-        x = self.ln1(x)
+        # x = self.ln1(x)
         x = self.relu1(x)
         x = torch.cat([x, c], dim=1)
 
         x = self.fc2(x)
-        x = self.ln2(x)
+        # x = self.ln2(x)
         x = self.relu2(x)
         x = torch.cat([x, c], dim=1)
 
@@ -63,25 +66,25 @@ class Net(nn.Module):
         self.hidden_size = hidden_size
 
         self.table_feature_extractor = TableFeatureExtractor(n_tables, hidden_size)
-        self.column_feature_extractor = nn.Linear(n_columns, hidden_size)
+        self.column_feature_extractor = nn.Linear(n_columns, hidden_size, bias=False)
         self.aggregate_layer = nn.Sequential(
             nn.Linear(hidden_size * 2, hidden_size),
-            nn.LayerNorm([hidden_size]),
-            nn.LeakyReLU(inplace=True),
+            # nn.LayerNorm([hidden_size]),
+            nn.ReLU(inplace=True),
             nn.Linear(hidden_size, hidden_size),
-            nn.LayerNorm([hidden_size]),
-            nn.LeakyReLU(inplace=True),
+            # nn.LayerNorm([hidden_size]),
+            nn.ReLU(inplace=True),
         )
         self.final_layer = nn.Sequential(
             nn.Linear(hidden_size * 2, hidden_size),
-            nn.LayerNorm([hidden_size]),
-            nn.LeakyReLU(inplace=True),
+            # nn.LayerNorm([hidden_size]),
+            nn.ReLU(inplace=True),
             nn.Linear(hidden_size, hidden_size),
-            nn.LayerNorm([hidden_size]),
-            nn.LeakyReLU(inplace=True),
-            nn.Linear(hidden_size, 1),
+            # nn.LayerNorm([hidden_size]),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_size, 1, bias=False),
         )
-        self.apply(weights_init)
+        # self.apply(weights_init)
 
     def forward(self, state):
         actions = state["possible_actions"]
