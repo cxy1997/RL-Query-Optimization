@@ -38,7 +38,7 @@ class TableFeatureExtractor(nn.Module):
         # self.ln2 = nn.LayerNorm([hidden_size-1])
         self.relu2 = nn.ReLU(inplace=True)
         self.fc3 = nn.Linear(hidden_size, hidden_size, bias=False)
-        # self.apply(weights_init)
+        self.apply(weights_init)
 
     def forward(self, one_hot_table, cardinality):
         c = torch.tensor(np.log(cardinality+1)-9).view(1, 1).to(one_hot_table.device).float()
@@ -84,7 +84,7 @@ class Net(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(hidden_size, 1, bias=False),
         )
-        # self.apply(weights_init)
+        self.apply(weights_init)
 
     def forward(self, state):
         actions = state["possible_actions"]

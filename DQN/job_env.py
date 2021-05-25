@@ -120,6 +120,7 @@ class JOB_env(object):
             "direct_c": -join_c,
             "log_c": np.clip(-np.log(join_c + 1) / 10, -10, 10),
             "log_reduced_c": np.clip(np.log(max(table_0[1] - join_c, table_1[1] - join_c,  1)) / 10, -10, 10),
+            "fusion": (np.clip(-np.log(join_c + 1) / 10, -10, 10) + np.clip(np.log(max(table_0[1] - join_c, table_1[1] - join_c,  1)) / 10, -10, 10)) / 2.0,
             "log_scale": np.clip(np.log((table_0[1]+1) * (table_1[1]+1) / (join_c+1)) / 10, -10, 10)
         }
 

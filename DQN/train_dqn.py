@@ -11,11 +11,11 @@ from tqdm import tqdm, trange
 from copy import deepcopy
 
 
-reward_modes = ["direct_c", "log_c", "log_reduced_c", "log_scale"]
+reward_modes = ["direct_c", "log_c", "log_reduced_c", "log_scale", "fusion"]
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--save-path', type=str, default='run_log_c2')
+parser.add_argument('--save-path', type=str, default='run_fusion')
 parser.add_argument('--load-model', type=str, default='off', choices=["on", "off"])
 parser.add_argument('--eval', action='store_true')
 parser.add_argument('--seed', type=int, default=0)
@@ -24,12 +24,12 @@ parser.add_argument('--learning-starts', type=int, default=3000)
 parser.add_argument('--learning-freq', type=int, default=20)
 parser.add_argument('--eval-every', type=int, default=3000)
 parser.add_argument('--target-update-freq', type=int, default=25)
-parser.add_argument('--lr', type=float, default=0.01)
-parser.add_argument('--gamma', type=float, default=0.9)
+parser.add_argument('--lr', type=float, default=0.005)
+parser.add_argument('--gamma', type=float, default=0.8)
 parser.add_argument('--epsilon-frames', type=int, default=50000)
 parser.add_argument('--hidden-size', type=int, default=32)
 parser.add_argument('--batch-size', type=int, default=32)
-parser.add_argument('--reward-mode', type=str, default='log_c', choices=reward_modes)
+parser.add_argument('--reward-mode', type=str, default='fusion', choices=reward_modes)
 parser.add_argument('--agent', type=str, default='dqn', choices=["dqn", "greedy"])
 
 
