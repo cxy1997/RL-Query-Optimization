@@ -4,7 +4,7 @@ import sys
 sys.path.append('../')
 from parse_sql import parse_sql
 from parse_cardinality import parse_cardinality
-
+from sql_metadata import Parser
 
 class JOB_env(object):
     def __init__(self,
@@ -17,6 +17,12 @@ class JOB_env(object):
         with open(job_list_file) as f:
             self.job_list = [x.strip().rstrip(".sql") for x in f.readlines()]
         self.queries = [parse_sql(os.path.join(query_dir, f'{fname}.sql')) for fname in self.job_list]
+        self.naturaltable = list()
+        #x=0;
+        for fname in self.job_list:
+            file = open(os.path.join(query_dir, f'{fname}.sql'),mode='r')
+            self.naturaltable.append( Parser(file.read()).tables)
+            #x=x+1;
         self.all_cardinalities = [parse_cardinality(os.path.join(cardinality_dir, f'{fname}.json')) for fname in self.job_list]
         with open(table_names_file) as f:
             self.all_tables = [x.strip() for x in f.readlines()]
