@@ -1,5 +1,11 @@
 # RL Query Optimization
 
+## Training Deep-Q Network
+```bash
+cd DQN/
+python train_dqn.py --save-path test-run --reward-mode [log_c/log_reduced_c/fusion]
+```
+
 ## Installation
 
 ### Install Java
