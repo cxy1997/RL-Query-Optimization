@@ -1,3 +1,4 @@
+"""This file is used to calculate Q update, and the experiment replay is in other file. """
 import pdb
 
 import torch
@@ -11,7 +12,6 @@ from model import Net
 from torch.autograd import Variable
 from replay_memory import ReplayMemory
 from torch.optim.lr_scheduler import StepLR
-
 
 class DQNAgent:
     def __init__(self, args, exploration=None, save_path=None):
@@ -32,6 +32,7 @@ class DQNAgent:
         os.makedirs(self.model_path, exist_ok=True)
         os.makedirs(self.optim_path, exist_ok=True)
 
+    #optimization
     def load_model(self, model_name=None):
         model_path, optim_path = self.model_path, self.optim_path
         file_list = sorted(os.listdir(model_path), key=lambda x: int(x.lstrip("model_").rstrip(".pt")))
@@ -56,7 +57,8 @@ class DQNAgent:
             optim_name = os.path.join(optim_path, optim_list[-1])
             self.optimizer.load_state_dict(torch.load(os.path.join(optim_name)))
         return num
-
+     
+    #take the action that follows the rule we specified
     def sample_action(self, obs, t):
         if random.random() > self.exploration.value(t):
             with torch.no_grad():
@@ -65,13 +67,15 @@ class DQNAgent:
         else:
             action = random.sample(obs["possible_actions"].keys(), 1)[0]
         return action
-
+    #add the result to the experiment buffer
     def push(self, state, action, next_state, reward, done):
         self.replay_buffer.push(state, action, next_state, reward, done)
 
+    #sample from the buffer to use 
     def can_sample(self, batch_size):
         return len(self.replay_buffer) >= batch_size
-
+    
+    #get the result of the app of Q value function for one step
     def train_model(self, batch_size, save_num=None):
         print("start training ...")
         q_a_values = []

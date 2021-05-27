@@ -1,3 +1,4 @@
+"""This file includes the CNN we used in the DQN, that's the Net class, and TableFeatureExtractor has its own class"""
 import numpy as np
 import torch
 import torch.nn as nn

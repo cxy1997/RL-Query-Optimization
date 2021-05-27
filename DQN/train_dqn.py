@@ -10,7 +10,7 @@ import pdb
 from tqdm import tqdm, trange
 from copy import deepcopy
 
-
+#use this file to get the results we have, approximately a day, might be slower if use cpu.
 reward_modes = ["direct_c", "log_c", "log_reduced_c", "log_scale", "fusion"]
 
 
@@ -37,7 +37,7 @@ def train(env, dqn_agent, args, num):
     last_obs, _ = env.reset()
     rewards, epi_rewards = 0, []
     eval_target = max(num, args.learning_starts)
-    for t in trange(num, 2000000):
+    for t in trange(num, 2000000):#doing 2*10^6 steps
         action = dqn_agent.sample_action(last_obs, t)
         obs, reward, done, info = env.step(action)
         rewards += reward[args.reward_mode]
