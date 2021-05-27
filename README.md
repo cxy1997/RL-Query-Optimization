@@ -56,7 +56,7 @@ cd calcite/example/csv
     ```
 
 ### Prepare database and queries
-1. Download IMDB data from [google drive](https://drive.google.com/file/d/1Qhk-Mf2Otc6C9e-vIm2OQyKoko7kK_--/view?usp=sharing). This is a big file, it would take a lot of storage.
+1. Download IMDB data from [google drive](https://drive.google.com/file/d/1Qhk-Mf2Otc6C9e-vIm2OQyKoko7kK_--/view?usp=sharing). This is a big file, so it would take a lot of storage.
 
 2. Create database
     ```bash
